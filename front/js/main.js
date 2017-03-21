@@ -39,7 +39,7 @@ $("#submit").click(function() {
   $.ajax({
     type: 'POST',
     url: ENDPOINT,
-    data: data,
+    data: JSON.stringify(data),
     contentType: 'application/json',
     dataType: 'json'
   })

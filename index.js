@@ -1,23 +1,30 @@
-var http = require('http');
+var https = require('https');
 
 var authOptions = {
-  hostname: 'https://m86akw3u3c.execute-api.eu-west-1.amazonaws.com',
-  port: 80,
+  host: 'm86akw3u3c.execute-api.eu-west-1.amazonaws.com',
   path: '/prod/sso',
-  method: 'POST'
+  method: 'POST',
+  headers: {
+   accept: '*/*'
+  }
 }
 
 var spamOptions = {
-  hostname: 'https://m86akw3u3c.execute-api.eu-west-1.amazonaws.com',
-  port: 80,
+  hostname: 'm86akw3u3c.execute-api.eu-west-1.amazonaws.com',
   path: '/prod/testHack',
   method: 'POST',
+  headers: {
+   accept: '*/*'
+  }
 }
 
-exports.registration = function registration(req, res) {
+exports.registration = function registration(req, res, cb) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
+  function callback(json) {
+    cb()
+  }
 
   if (req.method == "GET") {
     // get all registrations
@@ -25,18 +32,20 @@ exports.registration = function registration(req, res) {
     res.status(200).send(JSON.stringify(registrants));
   } else if (req.method == "POST") {
     // register new person
-    // var reqParsed = JSON.parse(req);
-    console.log(JSON.parse(req.body).stringify());
+    console.log(req.body);
 
-    if (!authenticateUser(reqParsed.name, reqParsed.password)) {
+    isAuth(req.body.name, req.body.password)
+    .then(function() {
+      return isSpam(req.body.bio);
+    }, function() {
       res.status(400).send("FORBIDDEN");
-    }
-    if (isSpam(reqParsed.bio)) {
+    })
+    .then(function() {
+      res.status(200).send("SUCCESS");
+    }, function() {
       res.status(400).send("SPAM");
-    }
-    register(reqParsed.name, reqParsed.bio)
-      ? res.status(200).send("SUCCESS")
-      : res.status(200).send("FAILED");
+    });
+
   } else if (req.method == "OPTIONS") {
     // CSS stuff
     res.status(200).end();
@@ -58,59 +67,41 @@ function getRegistrants() {
   ]
 }
 
-function register(name, bio) {
-  return true;
+function isAuth(name, password) {
+  return doPost(authOptions, {
+    "username": name,
+    "password": password
+  }).then(function(chunk) {
+    return new Promise(function(resolve, reject) {
+      chunk.isAuth ? resolve() : reject();
+    });
+  });
 }
 
 function isSpam(text) {
-  console.log(text);
-  var input = {
-    "payload": text,
-    "account": "team_registration"
-  };
-//  output = {
-//    "isSpam": false,
-//    "probability": 1
-//  };
-  return doPost(spamOptions, JSON.stringify(input)).isSpam;
+   return new Promise(function(resolve, reject) {
+     resolve();
+  });
 }
 
-function authenticateUser(name, password) {
-  return true;
-
-//   var input = {
-//     "username": name,
-//     "password": password,
-//     "account": "team_registration"
-//   };
-//   var res = doPost(authOptions, JSON.stringify(input));
-// //  output = {
-// //    "roles": ["all"],
-// //    "auth": true
-// //  }
-//   return JSON.parse(res).auth;
-}
 
 function doPost(options, payload) {
-  var req = http.request(options, function(res) {
+  return new Promise(function(resolve, reject) {
+    var req = https.request(options, function(res) {
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
-          return chunk
+        console.log(chunk);
+        resolve(JSON.parse(chunk));
       });
-  });
-  req.write(payload);
-  req.end();
-}
+    });
 
-function doGet(options) {
-  var req = http.request(options, function(res) {
-    var body = '';
-    res.on('data', function(d) {
-      body += d;
+    req.on('error', function(e) {
+      console.log(e);
+      reject(e);
     });
-    res.on('end', function() {
-      return JSON.parse(body);
-    });
+    console.log(payload);
+    req.write(JSON.stringify(payload));
+    req.end();
+
   });
-  req.end();
 }

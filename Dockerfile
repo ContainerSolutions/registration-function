@@ -9,7 +9,6 @@ WORKDIR opt
 RUN apk --update add -t build-dependencies wget \
 	&& wget -O - "$GCLOUD_ARCHIVE" | tar -xzf - \
     && ./google-cloud-sdk/install.sh --usage-reporting true --command-completion false --path-update true --rc-path /etc/profile \
-    && apk del build-dependencies \
-    && rm -rf /var/cache/apk/*
+    && apk del build-dependencies
 
 ENTRYPOINT ["/bin/sh"]

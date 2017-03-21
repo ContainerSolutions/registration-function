@@ -27,12 +27,12 @@ endef
 all: build
 
 build: $(CONFIG)
-	functions start
-	functions deploy registration -H
+	@functions start 2> /dev/null
+	@functions deploy registration -H 2> /dev/null
 	tail -f /tmp/logs
 
 export config
 $(CONFIG):
-	functions logs &>/dev/null &
-	sleep 1
-	echo "$$config" > "$@"
+	@functions logs &>/dev/null &
+	@sleep 1
+	@echo "$$config" > "$@"

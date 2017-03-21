@@ -18,17 +18,23 @@ var spamOptions = {
   }
 }
 
-exports.registration = function registration(req, res, cb) {
+var registrants = [
+  {
+    "name": "Adam Sandor",
+    "bio": "Adam was a hardcore Java developer and software architect was as long as he could remember until his recent dive into the world of programmable infrastructure"
+  },
+  { "name": "Carlos",
+    "bio": "Carlos Leon is a Colombian nerd working in tech for 6 years. He works as a software engineer at Container Solutions writing systems to automate the provisioning, orchestration and scaling of bare metal and virtual infrastructures"
+  }
+]
+
+exports.registration = function registration(req, res) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
-  function callback(json) {
-    cb()
-  }
 
   if (req.method == "GET") {
     // get all registrations
-    var registrants = getRegistrants()
     res.status(200).send(JSON.stringify(registrants));
   } else if (req.method == "POST") {
     // register new person
@@ -55,18 +61,6 @@ exports.registration = function registration(req, res, cb) {
   }
 };
 
-function getRegistrants() {
-  return [
-    {
-      "name": "Adam Sandor",
-      "bio": "Adam was a hardcore Java developer and software architect was as long as he could remember until his recent dive into the world of programmable infrastructure"
-    },
-    { "name": "Carlos",
-      "bio": "Carlos Leon is a Colombian nerd working in tech for 6 years. He works as a software engineer at Container Solutions writing systems to automate the provisioning, orchestration and scaling of bare metal and virtual infrastructures"
-    }
-  ]
-}
-
 function isAuth(name, password) {
   return doPost(authOptions, {
     "username": name,
@@ -83,7 +77,6 @@ function isSpam(text) {
      resolve();
   });
 }
-
 
 function doPost(options, payload) {
   return new Promise(function(resolve, reject) {
@@ -102,6 +95,5 @@ function doPost(options, payload) {
     console.log(payload);
     req.write(JSON.stringify(payload));
     req.end();
-
   });
 }

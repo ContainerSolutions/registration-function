@@ -1,11 +1,5 @@
 var ENDPOINT = "https://us-central1-container-solutions.cloudfunctions.net/registration";
-
-var DATA = {"people": [
-  {"name": "Adam Sandor",
-	 "bio": "Adam was a hardcore Java developer and software architect was as long as he could remember until his recent dive into the world of programmable infrastructure."},
-	{"name": "Carlos",
-	 "bio": "Carlos Leon is a Colombian nerd working in tech for 6 years. He works as a software engineer at Container Solutions writing systems to automate the provisioning, orchestration and scaling of bare metal and virtual infrastructures."}
-]};
+//var ENDPOINT = "http://172.17.0.2:8010/container-solutions/us-central1/registration";
 
 $("#form").hide();
 
